@@ -8,8 +8,6 @@ import android.view.MenuItem;
 /**
  * BroadcastMe Main Activity.
  *
- * @Autor Mike Gernet
- * @Autor Stefan Winterberger
  */
 public class MainActivity extends Activity {
 
@@ -19,7 +17,6 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-
 
     }
 
