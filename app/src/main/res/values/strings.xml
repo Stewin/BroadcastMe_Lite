@@ -1,6 +1,16 @@
 <resources>
     <string name="app_name">BroadcastMe Lite</string>
 
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+    <string-array name="planets_array">
+        <item>MyMessages</item>
+        <item>MyBroadcasts</item>
+        <item>Items</item>
+    </string-array>
+
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+
 </resources>
+
