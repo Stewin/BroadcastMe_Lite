@@ -1,6 +1,7 @@
 package ch.hslu.mobpro.projekt.broadcastmelite;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,6 +18,9 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        Intent backgroundService = new Intent(this, BackgroundService.class);
+        startService(backgroundService);
 
     }
 
