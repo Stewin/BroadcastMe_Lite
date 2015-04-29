@@ -14,6 +14,7 @@ import java.util.Locale;
  * Fragment that appears in the "content_frame", shows a planet
  */
 public class PlanetFragment extends Fragment {
+
     public static final String ARG_PLANET_NUMBER = "planet_number";
 
     public PlanetFragment() {

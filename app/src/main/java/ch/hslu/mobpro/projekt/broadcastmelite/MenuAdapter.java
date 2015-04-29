@@ -28,16 +28,14 @@ public class MenuAdapter extends ArrayAdapter<String> {
             rowView = inflater.inflate(R.layout.drawer_list_item, null);
             viewHolder = new ViewHolder();
             viewHolder.text = (TextView) rowView.findViewById(R.id.text1);
-            viewHolder.image = (ImageView) rowView.findViewById(R.id.imageView);
             rowView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) rowView.getTag();
         }
 
         int id = Integer.parseInt(Ids[position]);
-        int imageFile = MainMenu.GetbyId(id).IconFile;
-        viewHolder.text.setText(MainMenu.GetbyId(id).Name);
-        viewHolder.image.setImageDrawable(context.getResources().getDrawable(imageFile));
+        int imageFile = MainMenu.getById(id).IconFile;
+        viewHolder.text.setText(MainMenu.getById(id).Name);
         return rowView;
     }
 

@@ -11,7 +11,7 @@ public class MainMenu {
 
     public static void LoadModel(Context context) {
 
-        Items = new ArrayList<MenuItems>();
+        Items = new ArrayList<>();
 
         String[] mPlanetTitles = context.getResources().getStringArray(R.array.menuPoints_array);
         for (int i = 0; i < mPlanetTitles.length; i++) {
@@ -20,7 +20,7 @@ public class MainMenu {
         }
     }
 
-    public static MenuItems GetbyId(int id) {
+    public static MenuItems getById(int id) {
 
         for (MenuItems item : Items) {
             if (item.Id == id) {

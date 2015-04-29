@@ -1,6 +1,6 @@
 package ch.hslu.mobpro.projekt.broadcastmelite;
 
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 
 /**
  * Created by Stefan on 21.04.2015.

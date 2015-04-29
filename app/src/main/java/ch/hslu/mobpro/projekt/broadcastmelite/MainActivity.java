@@ -22,13 +22,13 @@ import android.widget.Toast;
  *
  */
 public class MainActivity extends AppCompatActivity {
+
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
-
     private CharSequence mDrawerTitle;
     private CharSequence mTitle;
-    private String[] mPlanetTitles;
+    private String[] mMenuPoints;
 
 
     @Override
@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mTitle = mDrawerTitle = getTitle();
-        mPlanetTitles = getResources().getStringArray(R.array.menuPoints_array);
+        mMenuPoints = getResources().getStringArray(R.array.menuPoints_array);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
 
@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
             ids[i] = Integer.toString(i + 1);
         }
+
         // set up the drawer's list view with items using a custom adapter and click listener
         MenuAdapter adapter = new MenuAdapter(this, ids);
         mDrawerList.setAdapter(adapter);
@@ -141,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
 
         //update selected item and title, then close the drawer
         mDrawerList.setItemChecked(position, true);
-        setTitle(mPlanetTitles[position]);
+        setTitle(mMenuPoints[position]);
         mDrawerLayout.closeDrawer(mDrawerList);
     }
 
