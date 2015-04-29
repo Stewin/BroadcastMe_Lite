@@ -27,16 +27,18 @@
         android:background="@android:color/darker_gray" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/tvMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0.51"
-        android:text="New Text" />
+        android:editable="true"
+        android:text="&lt;New Message>" />
 
     <Button
-        android:id="@+id/btnNewMessage"
+        android:id="@+id/btnSendMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:onClick="OnSendMessageClicked"
         android:text="Send Message" />
 
 </LinearLayout>
