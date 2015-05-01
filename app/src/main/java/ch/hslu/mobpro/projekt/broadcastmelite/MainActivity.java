@@ -1,5 +1,6 @@
 package ch.hslu.mobpro.projekt.broadcastmelite;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+
 
 /**
  * BroadcastMe Main Activity.
@@ -33,6 +35,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent intent = new Intent(this, BackgroundService.class);
+        startService(intent);
+
 
         mTitle = mDrawerTitle = getTitle();
         mMenuPoints = getResources().getStringArray(R.array.menuPoints_array);
