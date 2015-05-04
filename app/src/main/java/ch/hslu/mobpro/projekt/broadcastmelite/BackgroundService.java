@@ -27,7 +27,8 @@ import java.io.InputStream;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutionException;
+
+import com.google.gson.*;
 
 
 /**
@@ -42,7 +43,7 @@ public class BackgroundService extends Service {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
                 .setContentTitle(title)
                 .setContentText(text)
-                .setSmallIcon(R.drawable.abc_edit_text_material);
+                .setSmallIcon(R.mipmap.logo_broadcastmelite);
 
         Intent notificationIntent = new Intent(this, MainActivity.class);
 
