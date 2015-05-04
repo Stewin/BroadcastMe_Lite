@@ -215,6 +215,10 @@ public class MainActivity extends AppCompatActivity {
 
         Topics topic2 = gson.fromJson(json,Topics.class);
 
-        Toast.makeText(this,topic2.getName(),Toast.LENGTH_LONG);
+        Toast.makeText(getApplicationContext(),topic2.getName(),Toast.LENGTH_LONG).show();
+    }
+
+    public void onNewBroadcastClicked(View v){
+
     }
 }
