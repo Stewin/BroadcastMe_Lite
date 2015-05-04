@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -17,11 +18,21 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.CheckBox;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Calendar;
 
 
@@ -207,14 +218,81 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    public void onSubscribeClicked(View v){
+    public void createTestData() throws IOException {
         Topics topic = new Topics("qw21der","MOBPRO");
+        topic.addMessage("Message 1");
+        topic.addMessage("Message 2");
+
+        saveText(topic);
+
+        Topics topic2 = loadText("qw21der");
+        Toast.makeText(this,topic2.getName(),Toast.LENGTH_LONG).show();
+
+        /*
+        DownloadTask performBackgroundTask = new DownloadTask(context);
+        String result = performBackgroundTask.execute("http://mikegernet.ch/mobpro/index.php?get=1234&timestamp=1").get();
+        */
+    }
+
+    public void saveText(Topics data) throws IOException {
         Gson gson = new Gson();
-        String json = gson.toJson(topic);
+        String json = gson.toJson(data);
 
-        Topics topic2 = gson.fromJson(json,Topics.class);
+        String text = json;
+        File file = new File(getFilesDir()+"/server/");
+        if(!file.exists()){
+            file.mkdirs();
+        }
 
+        String FILENAME = data.getIdentifier()+".txt";
+        System.err.println(FILENAME);
+        File outfile = new File(file, FILENAME);
+        System.out.println(outfile.toString());
+        FileWriter fw;
+        BufferedWriter bw;
+        Writer writer = null;
+        try{
+            fw = new FileWriter(outfile);
+            bw = new BufferedWriter(fw);
+            bw.write(text);
+            bw.close();
+            fw.close();
+        }catch (IOException ex){
+            Log.e("Persistenz", "Error beim schreiben");
+            System.out.println(ex.toString());
+        }finally {
+        }
+    }
+
+    public Topics loadText(String filename){
+
+        File file = new File(getFilesDir()+"/server/");
+        String FILENAME=filename+".txt";
+        System.err.println(FILENAME);
+        File infile = new File(file,FILENAME);
+        FileReader fr;
+        BufferedReader br;
+        String text="";
+        try{
+            fr = new FileReader(infile);
+            br = new BufferedReader(fr);
+            String tmp;
+            while((tmp = br.readLine()) != null) text += tmp;
+            fr.close();
+            br.close();
+        }catch (FileNotFoundException fnfe){
+            System.err.println("File not found");
+        } catch (IOException e) {
+            System.err.println("IO Exception");
+        }finally {
+        }
+        Gson gson = new Gson();
+        return gson.fromJson(text, Topics.class);
+    }
+
+
+    public void onSubscribeClicked(View v) throws IOException {
+        createTestData();
         Toast.makeText(getApplicationContext(),topic2.getName(),Toast.LENGTH_LONG).show();
     }
 
