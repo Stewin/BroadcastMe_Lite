@@ -1,8 +1,11 @@
 package ch.hslu.mobpro.projekt.broadcastmelite;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
@@ -16,19 +19,24 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import java.util.Calendar;
+
 
 /**
  * BroadcastMe Main Activity.
- *
  */
 public class MainActivity extends AppCompatActivity {
 
-    private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
-    private ActionBarDrawerToggle mDrawerToggle;
-    private CharSequence mDrawerTitle;
-    private CharSequence mTitle;
-    private String[] mMenuPoints;
+    private DrawerLayout drawerLayout;
+    private ListView drawerList;
+    private ActionBarDrawerToggle drawerToggle;
+    private CharSequence drawerTitle;
+    private CharSequence title;
+    private String[] menuPoints;
+    private SharedPreferences preference;
+    private SharedPreferences.Editor editor;
+    private long timeStamp;
+    private int requestIntervall;
 
 
     @Override
@@ -39,11 +47,13 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, BackgroundService.class);
         startService(intent);
 
+        initPreferences();
 
-        mTitle = mDrawerTitle = getTitle();
-        mMenuPoints = getResources().getStringArray(R.array.menuPoints_array);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+
+        title = drawerTitle = getTitle();
+        menuPoints = getResources().getStringArray(R.array.menuPoints_array);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerList = (ListView) findViewById(R.id.left_drawer);
 
         MainMenu.LoadModel(this);
 
@@ -55,8 +65,8 @@ public class MainActivity extends AppCompatActivity {
 
         // set up the drawer's list view with items using a custom adapter and click listener
         MenuAdapter adapter = new MenuAdapter(this, ids);
-        mDrawerList.setAdapter(adapter);
-        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+        drawerList.setAdapter(adapter);
+        drawerList.setOnItemClickListener(new DrawerItemClickListener());
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -64,29 +74,41 @@ public class MainActivity extends AppCompatActivity {
 
         // ActionBarDrawerToggle ties together the the proper interactions
         // between the sliding drawer and the action bar app icon
-        mDrawerToggle = new ActionBarDrawerToggle(
+        drawerToggle = new ActionBarDrawerToggle(
                 this,                  /* host Activity */
-                mDrawerLayout,         /* DrawerLayout object */
+                drawerLayout,         /* DrawerLayout object */
                 null,  /* nav drawer image to replace 'Up' caret */
                 R.string.drawer_open,  /* "open drawer" description for accessibility */
                 R.string.drawer_close  /* "close drawer" description for accessibility */
         ) {
             public void onDrawerClosed(View view) {
-                getSupportActionBar().setTitle(mTitle);
+                getSupportActionBar().setTitle(title);
                 supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
 
             public void onDrawerOpened(View drawerView) {
-                getSupportActionBar().setTitle(mDrawerTitle);
+                getSupportActionBar().setTitle(drawerTitle);
                 supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
         };
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        drawerLayout.setDrawerListener(drawerToggle);
 
         if (savedInstanceState == null) {
             selectItem(0);
-
         }
+    }
+
+    private void initPreferences() {
+
+
+        preference = PreferenceManager.getDefaultSharedPreferences(this);
+//        preference = getSharedPreferences("settings",MODE_PRIVATE);
+        editor = preference.edit();
+
+        this.timeStamp = preference.getLong("TimeStamp", Calendar.getInstance().getTimeInMillis() / 1000L);
+        this.requestIntervall = preference.getInt("RequestIntervall", 0);
+
+        editor.putLong("TimeStamp", Calendar.getInstance().getTimeInMillis());
     }
 
     @Override
@@ -100,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         // If the nav drawer is open, hide action items related to the content view
-        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+        boolean drawerOpen = drawerLayout.isDrawerOpen(drawerList);
         menu.findItem(R.id.action_settings).setVisible(!drawerOpen);
         return super.onPrepareOptionsMenu(menu);
     }
@@ -109,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         // The action bar home/up action should open or close the drawer.
         // ActionBarDrawerToggle will take care of this.
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
+        if (drawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -141,9 +163,9 @@ public class MainActivity extends AppCompatActivity {
                     .replace(R.id.content_frame, fragment).commit();
 
             // update selected item and title, then close the drawer
-            mDrawerList.setItemChecked(position, true);
-            setTitle(mMenuPoints[position]);
-            mDrawerLayout.closeDrawer(mDrawerList);
+            drawerList.setItemChecked(position, true);
+            setTitle(menuPoints[position]);
+            drawerLayout.closeDrawer(drawerList);
         } else {
             // error in creating fragment
             Log.e("MainActivity", "Error in creating fragment");
@@ -152,8 +174,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void setTitle(CharSequence title) {
-        mTitle = title;
-        getSupportActionBar().setTitle(mTitle);
+        this.title = title;
+        getSupportActionBar().setTitle(this.title);
     }
 
     /**
@@ -164,14 +186,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         // Sync the toggle state after onRestoreInstanceState has occurred.
-        mDrawerToggle.syncState();
+        drawerToggle.syncState();
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         // Pass any configuration change to the drawer toggls
-        mDrawerToggle.onConfigurationChanged(newConfig);
+        drawerToggle.onConfigurationChanged(newConfig);
     }
 
     // The click listener for ListView in the navigation drawer

@@ -1,0 +1,28 @@
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="Settings">
+
+        <CheckBoxPreference
+            android:key="example_key"
+            android:title="example String"
+            android:defaultValue="true"/>
+
+        <CheckBoxPreference
+            android:key="transparent_nav"
+            android:title="title"
+            android:defaultValue="false"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="category">
+
+        <Preference
+            android:key="call_method"
+            android:title="preference"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
