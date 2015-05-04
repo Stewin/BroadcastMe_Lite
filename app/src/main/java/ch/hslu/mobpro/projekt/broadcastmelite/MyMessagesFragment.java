@@ -2,12 +2,21 @@ package ch.hslu.mobpro.projekt.broadcastmelite;
 
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
+
+import com.google.gson.Gson;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 
 
 /**
@@ -15,19 +24,27 @@ import android.widget.Toast;
  */
 public class MyMessagesFragment extends ListFragment {
 
+    private final String myMessagesExtension = ".txt";
     private ListView listView;
+    private ArrayList<Topics> subscribedTopics = new ArrayList<>();
+    private String myMessagesPath;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
         View rootView = inflater.inflate(R.layout.fragment_mymessages, container, false);
-
         listView = (ListView) rootView.findViewById(R.id.list_item);
 
-        super.onActivityCreated(savedInstanceState);
-        String[] values = new String[] { "Android", "iPhone", "WindowsMobile",
-                "Blackberry"};
+        myMessagesPath = getActivity().getFilesDir() + "/mymessages/";
+        this.loadAllSubscribedTopics();
+
+        String[] values = new String[subscribedTopics.size()];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = subscribedTopics.get(i).getName();
+        }
+
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
                 android.R.layout.simple_list_item_1, values);
         setListAdapter(adapter);
@@ -37,7 +54,52 @@ public class MyMessagesFragment extends ListFragment {
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
+        //ToDo: Implement Action for Clicking a Topic in Message View.
+    }
 
+    /**
+     * Lädt alle Dateien im Filepfad für "mymessages" in die Memebervariable subscribedTopics.
+     */
+    private void loadAllSubscribedTopics() {
 
+        File files = new File(myMessagesPath);
+        for (File f : files.listFiles()) {
+            Topics topic = parseTopicFromFile(f);
+            subscribedTopics.add(topic);
+        }
+    }
+
+    /**
+     * Parst ein Topics-Objekt aus dem File.
+     *
+     * @param file File zum parsen.
+     * @return Topics-Objekt.
+     */
+    private Topics parseTopicFromFile(File file) {
+        FileReader fileReader = null;
+        BufferedReader bufferedReader = null;
+        String text = "";
+        try {
+            fileReader = new FileReader(file);
+            bufferedReader = new BufferedReader(fileReader);
+            String tmp;
+            while ((tmp = bufferedReader.readLine()) != null) text += tmp;
+            fileReader.close();
+            bufferedReader.close();
+        } catch (FileNotFoundException fnfe) {
+            System.err.println("File not found");
+        } catch (IOException e) {
+            System.err.println("IO Exception");
+        } finally {
+            try {
+                if (bufferedReader != null) {
+                    bufferedReader.close();
+                }
+            } catch (IOException ex) {
+                Log.e("parseTopicFromLine", "Could not close BufferedReader!");
+            }
+        }
+        Gson gson = new Gson();
+        return gson.fromJson(text, Topics.class);
     }
 }

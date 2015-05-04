@@ -1,11 +1,9 @@
 package ch.hslu.mobpro.projekt.broadcastmelite;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -18,9 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.CheckBox;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -34,6 +30,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Calendar;
+import java.util.Random;
 
 
 /**
@@ -73,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
 
         String[] ids = new String[MainMenu.Items.size()];
         for (int i = 0; i < ids.length; i++) {
-
             ids[i] = Integer.toString(i + 1);
         }
 
@@ -137,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onPrepareOptionsMenu(Menu menu) {
         // If the nav drawer is open, hide action items related to the content view
         boolean drawerOpen = drawerLayout.isDrawerOpen(drawerList);
-        menu.findItem(R.id.action_settings).setVisible(!drawerOpen);
+        menu.findItem(R.id.action_settings).setVisible(false);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -210,23 +206,23 @@ public class MainActivity extends AppCompatActivity {
         drawerToggle.onConfigurationChanged(newConfig);
     }
 
-    // The click listener for ListView in the navigation drawer
-    private class DrawerItemClickListener implements ListView.OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            selectItem(position);
-        }
-    }
-
     public void createTestData() throws IOException {
-        Topics topic = new Topics("qw21der","MOBPRO");
-        topic.addMessage("Message 1");
-        topic.addMessage("Message 2");
+        Topics topic = new Topics("hhgzu767", "PREN2");
+        topic.addMessage("Message 100");
+        topic.addMessage("Message 200");
+        topic.addMessage("Message 300");
+        topic.addMessage("Message 400");
+
+
+        //Generate TopicKey
+        Random r = new Random();
+        Long.toString(r.nextLong(), 32);
+
 
         saveText(topic);
 
-        Topics topic2 = loadText("qw21der");
-        Toast.makeText(this,topic2.getName(),Toast.LENGTH_LONG).show();
+        Topics topic2 = loadText("hhgzu767");
+        Toast.makeText(this, topic2.getName(), Toast.LENGTH_LONG).show();
 
         /*
         DownloadTask performBackgroundTask = new DownloadTask(context);
@@ -239,64 +235,70 @@ public class MainActivity extends AppCompatActivity {
         String json = gson.toJson(data);
 
         String text = json;
-        File file = new File(getFilesDir()+"/server/");
-        if(!file.exists()){
+        File file = new File(getFilesDir() + "/mymessages/");
+        if (!file.exists()) {
             file.mkdirs();
         }
 
-        String FILENAME = data.getIdentifier()+".txt";
+        String FILENAME = data.getIdentifier() + ".txt";
         System.err.println(FILENAME);
         File outfile = new File(file, FILENAME);
         System.out.println(outfile.toString());
         FileWriter fw;
         BufferedWriter bw;
         Writer writer = null;
-        try{
+        try {
             fw = new FileWriter(outfile);
             bw = new BufferedWriter(fw);
             bw.write(text);
             bw.close();
             fw.close();
-        }catch (IOException ex){
+        } catch (IOException ex) {
             Log.e("Persistenz", "Error beim schreiben");
             System.out.println(ex.toString());
-        }finally {
+        } finally {
         }
     }
 
-    public Topics loadText(String filename){
+    public Topics loadText(String filename) {
 
-        File file = new File(getFilesDir()+"/server/");
-        String FILENAME=filename+".txt";
+        File file = new File(getFilesDir() + "/mymessages/");
+        String FILENAME = filename + ".txt";
         System.err.println(FILENAME);
-        File infile = new File(file,FILENAME);
+        File infile = new File(file, FILENAME);
         FileReader fr;
         BufferedReader br;
-        String text="";
-        try{
+        String text = "";
+        try {
             fr = new FileReader(infile);
             br = new BufferedReader(fr);
             String tmp;
-            while((tmp = br.readLine()) != null) text += tmp;
+            while ((tmp = br.readLine()) != null) text += tmp;
             fr.close();
             br.close();
-        }catch (FileNotFoundException fnfe){
+        } catch (FileNotFoundException fnfe) {
             System.err.println("File not found");
         } catch (IOException e) {
             System.err.println("IO Exception");
-        }finally {
+        } finally {
         }
         Gson gson = new Gson();
         return gson.fromJson(text, Topics.class);
     }
 
-
     public void onSubscribeClicked(View v) throws IOException {
         createTestData();
-        Toast.makeText(getApplicationContext(),topic2.getName(),Toast.LENGTH_LONG).show();
     }
 
-    public void onNewBroadcastClicked(View v){
+    public void onNewBroadcastClicked(View v) {
 
+    }
+
+    // The click listener for ListView in the navigation drawer
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            selectItem(position);
+        }
     }
 }
