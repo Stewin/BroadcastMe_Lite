@@ -28,7 +28,6 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.google.gson.*;
 
 
 /**
@@ -85,7 +84,7 @@ public class BackgroundService extends Service {
                 });
             }
         };
-        timer.schedule(doAsynchronousTask, 0, 10000);
+        timer.schedule(doAsynchronousTask, 0, 60000);
     }
 
 
