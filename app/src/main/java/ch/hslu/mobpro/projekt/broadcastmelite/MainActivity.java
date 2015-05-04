@@ -18,6 +18,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
+
+import com.google.gson.Gson;
 
 import java.util.Calendar;
 
@@ -205,4 +208,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    public void onSubscribeClicked(View v){
+        Topics topic = new Topics("qw21der","MOBPRO");
+        Gson gson = new Gson();
+        String json = gson.toJson(topic);
+
+        Topics topic2 = gson.fromJson(json,Topics.class);
+
+        Toast.makeText(this,topic2.getName(),Toast.LENGTH_LONG);
+    }
 }
