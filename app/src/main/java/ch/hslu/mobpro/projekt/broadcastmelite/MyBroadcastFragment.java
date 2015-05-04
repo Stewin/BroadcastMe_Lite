@@ -98,7 +98,6 @@ public class MyBroadcastFragment extends ListFragment {
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        //ToDo: Implement Action for Clicking on a own Broadcast.
+        //ToDo: Implement Logic for a Click on a BroadcastItem
     }
-
 }

@@ -38,6 +38,7 @@ import java.util.Random;
  */
 public class MainActivity extends AppCompatActivity {
 
+    private final String myBroadcastExtension = ".txt";
     private DrawerLayout drawerLayout;
     private ListView drawerList;
     private ActionBarDrawerToggle drawerToggle;
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences.Editor editor;
     private long timeStamp;
     private int requestIntervall;
-
+    private String myBroadcastsPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
         initPreferences();
 
+        myBroadcastsPath = getFilesDir() + "/mybroadcasts/";
 
         title = drawerTitle = getTitle();
         menuPoints = getResources().getStringArray(R.array.menuPoints_array);
@@ -213,12 +215,6 @@ public class MainActivity extends AppCompatActivity {
         topic.addMessage("Message 300");
         topic.addMessage("Message 400");
 
-
-        //Generate TopicKey
-        Random r = new Random();
-        Long.toString(r.nextLong(), 32);
-
-
         saveText(topic);
 
         Topics topic2 = loadText("hhgzu767");
@@ -290,8 +286,57 @@ public class MainActivity extends AppCompatActivity {
         createTestData();
     }
 
+    /**
+     * ActionListener für den NewBroadcastButton.
+     *
+     * @param v View des Buttons.
+     */
     public void onNewBroadcastClicked(View v) {
+//Generate TopicKey
+        String key = Long.toString(new Random().nextLong(), 32);
+        String title = "<Click to Edit>";
+        Topics newBroadcast = new Topics(key, title);
+        this.saveTopicsInFiles(newBroadcast);
+    }
 
+    /**
+     * Speichert ein Topics-Objekt persistent im mybroadcast Pfad.
+     *
+     * @param broadcast Topics-Objekt zum speichern.
+     */
+    private void saveTopicsInFiles(Topics broadcast) {
+        Gson gson = new Gson();
+        String json = gson.toJson(broadcast);
+
+        String text = json;
+        File file = new File(myBroadcastsPath);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+
+        String filename = broadcast.getIdentifier() + myBroadcastExtension;
+        File outfile = new File(file, filename);
+
+        FileWriter fileWriter;
+        BufferedWriter bufferedWriter = null;
+        try {
+            fileWriter = new FileWriter(outfile);
+            bufferedWriter = new BufferedWriter(fileWriter);
+            bufferedWriter.write(text);
+            bufferedWriter.close();
+            fileWriter.close();
+        } catch (IOException ex) {
+            Log.e("Persistenz", "Error beim schreiben");
+            System.out.println(ex.toString());
+        } finally {
+            try {
+                if (bufferedWriter != null) {
+                    bufferedWriter.close();
+                }
+            } catch (IOException ioex) {
+                Log.e("saveTopicsInFiles", "Could not close BufferedWriter");
+            }
+        }
     }
 
     // The click listener for ListView in the navigation drawer
