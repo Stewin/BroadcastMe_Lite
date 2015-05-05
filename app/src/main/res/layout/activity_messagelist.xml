@@ -4,12 +4,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tvTopic"
+    <EditText
+        android:id="@+id/etTopicTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="&lt;Topic>"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:text="&lt;New Topic>" />
 
     <View
         android:layout_width="fill_parent"

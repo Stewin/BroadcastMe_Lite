@@ -146,7 +146,6 @@ public class DetailBroadcastActivity extends Activity {
 
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            Log.i("beforeTextChanged", "before Title changed");
         }
 
         @Override
@@ -157,7 +156,6 @@ public class DetailBroadcastActivity extends Activity {
 
         @Override
         public void afterTextChanged(Editable s) {
-            Log.i("afterTextChanged", "Title changed");
 
         }
     }

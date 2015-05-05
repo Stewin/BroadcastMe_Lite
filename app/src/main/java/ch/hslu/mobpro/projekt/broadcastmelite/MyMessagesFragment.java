@@ -1,6 +1,7 @@
 package ch.hslu.mobpro.projekt.broadcastmelite;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
@@ -17,9 +18,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
@@ -32,7 +35,6 @@ public class MyMessagesFragment extends ListFragment {
 
     private final String myMessagesExtension = ".txt";
     DownloadTask performBackgroundTask;
-    private ListView listView;
     private ArrayList<Topics> subscribedTopics = new ArrayList<>();
     private String myMessagesPath;
 
@@ -45,12 +47,26 @@ public class MyMessagesFragment extends ListFragment {
 
         performBackgroundTask = new DownloadTask(getActivity());
 
-
-
         myMessagesPath = getActivity().getFilesDir() + "/mymessages/";
         this.loadAllSubscribedTopics();
 
-//        pullAllNewMessages();
+        refreshListView();
+
+        return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        pullAllNewMessages();
+        refreshListView();
+    }
+
+    /**
+     * Aktualisiert die Liste mit Broadcasts.
+     */
+    private void refreshListView() {
+        this.loadAllSubscribedTopics();
 
         String[] values = new String[subscribedTopics.size()];
         for (int i = 0; i < values.length; i++) {
@@ -60,8 +76,6 @@ public class MyMessagesFragment extends ListFragment {
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
                 android.R.layout.simple_list_item_1, values);
         setListAdapter(adapter);
-
-        return rootView;
     }
 
     @Override
@@ -71,27 +85,33 @@ public class MyMessagesFragment extends ListFragment {
 
         Intent intent = new Intent(getActivity(), MessageListActivity.class);
         intent.putExtra("title", topic.getName());
+        intent.putExtra("key", topic.getIdentifier());
         intent.putStringArrayListExtra("messages", topic.getMessages());
 
         startActivity(intent);
     }
 
     /**
-     * Holt alle Messages vom Server die aboniert sind und neuer als der letzte Timestamp.
-     * Hält die neuen Messages erst im Laufzeitspeicher. Müssen beim beenden persistiert werden.
+     * Holt alle Messages vom Server die aboniert und neuer als der letzte Timestamp sind.
      */
     private void pullAllNewMessages() {
         for (int i = 0; i < subscribedTopics.size(); i++) {
+            Topics topic = subscribedTopics.get(i);
+            topic.getMessages().clear();
             try {
-                Topics topic = subscribedTopics.get(i);
                 String[] newMessages = pullNewMessagesByKey(topic.getIdentifier());
-                for (String message : newMessages) {
-                    topic.addMessage(message);
+
+                if (newMessages.length > 0) {
+                    for (String message : newMessages) {
+                        topic.addMessage(message);
+                    }
                 }
-                //ToDo: Timestamp in Prefs aktualisieren.
             } catch (JSONException e) {
                 Log.e("pullNewMessages:", "Fehler beim pullen vom Server.");
+            } catch (Exception ex) {
+                Log.e("Sömthing went wröng", ex.getMessage());
             }
+            persistTopics(topic);
         }
     }
 
@@ -102,10 +122,20 @@ public class MyMessagesFragment extends ListFragment {
      * @return Meesages zum Identifier die neuer sind als der Topic.
      * @throws JSONException Falls die Messages nicht geparst werden können.
      */
-    private String[] pullNewMessagesByKey(String identifier) throws JSONException {
+    private String[] pullNewMessagesByKey(String identifier) throws Exception {
         try {
-            String result = performBackgroundTask.execute("http://mikegernet.ch/mobpro/index.php?get=" + identifier + "&timestamp=1").get();
-            //ToDo: Add Timestamp from preferences to the Request.
+            long timestamp = 1;
+            //ToDo: Add Timestamp from preferences to the Request instead of 1.
+
+            String result = null;
+
+            performBackgroundTask = new DownloadTask(getActivity());
+            result = performBackgroundTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "http://mikegernet.ch/mobpro/index.php?get=" + identifier + "&timestamp=" + timestamp).get();
+
+
+            if (result == null) {
+                return new String[0];
+            }
             return parseJSONforMessages(result);
         } catch (InterruptedException e) {
             Log.e("Pull Messages", "pull failed.");
@@ -113,6 +143,10 @@ public class MyMessagesFragment extends ListFragment {
         } catch (ExecutionException e) {
             Log.e("Pull Messages", "pull failed.");
             throw new JSONException("Could not Parse JSON");
+        } catch (Exception ex) {
+            performBackgroundTask.getStatus();
+            Log.e("Irgendöppis mitem executor", "komisch");
+            throw new Exception(performBackgroundTask.getStatus().toString());
         }
     }
 
@@ -127,27 +161,29 @@ public class MyMessagesFragment extends ListFragment {
     public String[] parseJSONforMessages(String json) throws JSONException {
         try {
             JSONArray jsonArray = new JSONArray(json);
-            String[] messages = new String[jsonArray.length()];
+            int numberOfMessages = jsonArray.length();
+            String[] messages = new String[numberOfMessages];
+            if (messages == null) {
+                return new String[0];
+            }
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 String timestamp = jsonObject.getString("timestamp");
                 String message = jsonObject.getString("message");
-                Log.i("Parsed Messages", timestamp + ": " + message);
                 messages[i] = message;
-                return messages;
             }
+            return messages;
         } catch (JSONException e) {
             Log.e("JSON-Parser", "Could not parse JSON");
             throw new JSONException(e.getMessage());
         }
-        return new String[0];
     }
 
     /**
      * Lädt alle Dateien im Filepfad für "mymessages" in die Memebervariable subscribedTopics.
      */
     private void loadAllSubscribedTopics() {
-
+        subscribedTopics.clear();
         File files = new File(myMessagesPath);
         if (files != null) {
             for (File f : files.listFiles()) {
@@ -191,5 +227,47 @@ public class MyMessagesFragment extends ListFragment {
         }
         Gson gson = new Gson();
         return gson.fromJson(text, Topics.class);
+    }
+
+    //Speichert den Broadcast der aktuell auf der Activity angezeigt wird.
+    private void persistTopics(Topics topic) {
+        Gson gson = new Gson();
+
+
+        String json = gson.toJson(topic);
+
+        String text = json;
+        File directoryPath = new File(myMessagesPath);
+        if (!directoryPath.exists()) {
+            directoryPath.mkdirs();
+        }
+
+        String filename = topic.getIdentifier() + myMessagesExtension;
+        File outfile = new File(directoryPath, filename);
+
+        if (outfile.exists()) {
+            outfile.delete();
+        }
+
+        FileWriter fileWriter;
+        BufferedWriter bufferedWriter = null;
+        try {
+            fileWriter = new FileWriter(outfile);
+            bufferedWriter = new BufferedWriter(fileWriter);
+
+            bufferedWriter.write(text);
+            bufferedWriter.flush();
+        } catch (IOException ex) {
+            Log.e("Persistenz", "Error beim schreiben");
+            System.out.println(ex.toString());
+        } finally {
+            try {
+                if (bufferedWriter != null) {
+                    bufferedWriter.close();
+                }
+            } catch (IOException ioex) {
+                Log.e("saveTopicsInFiles", "Could not close BufferedWriter");
+            }
+        }
     }
 }

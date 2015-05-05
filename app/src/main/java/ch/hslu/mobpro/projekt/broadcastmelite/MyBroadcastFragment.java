@@ -75,6 +75,8 @@ public class MyBroadcastFragment extends ListFragment {
                 Topics topic = parseTopicFromFile(f);
                 myOwnBroadcasts.add(topic);
             }
+        } else {
+            Log.i("Load Own Broadcasts", "No Broadcasts available");
         }
     }
 

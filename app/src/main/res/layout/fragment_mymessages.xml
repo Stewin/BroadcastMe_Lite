@@ -3,13 +3,28 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btnSubscribe"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:text="Subscribe Broadcast"
-        android:onClick="onSubscribeClicked" />
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/etKeyString"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight=".5"
+            android:editable="true"
+            android:enabled="true"
+            android:text="&lt;KeyString>" />
+
+        <Button
+            android:id="@+id/btnSubscribe"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:onClick="onSubscribeClicked"
+            android:text="Subscribe Broadcast" />
+    </LinearLayout>
 
     <ListView
         android:id="@android:id/list"

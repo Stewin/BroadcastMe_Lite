@@ -16,6 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import com.google.gson.Gson;
@@ -33,7 +34,7 @@ import java.util.Random;
  */
 public class MainActivity extends AppCompatActivity {
 
-    private final String myBroadcastExtension = ".txt";
+    private final String myFileExtensions = ".txt";
     DownloadTask performBackgroundTask;
     private DrawerLayout drawerLayout;
     private ListView drawerList;
@@ -45,7 +46,9 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences.Editor editor;
     private long timeStamp;
     private int requestIntervall;
+    private String myMessagesPath;
     private String myBroadcastsPath;
+    private EditText etKeyString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         myBroadcastsPath = getFilesDir() + "/mybroadcasts/";
+        myMessagesPath = getFilesDir() + "/mymessages/";
 
         performBackgroundTask = new DownloadTask(this);
 
@@ -202,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
             drawerList.setItemChecked(position, true);
             setTitle(menuPoints[position]);
             drawerLayout.closeDrawer(drawerList);
+
         } else {
             // error in creating fragment
             Log.e("MainActivity", "Error in creating fragment");
@@ -233,23 +238,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
-    public void onSubscribeClicked(View v) throws IOException {
-
+    /**
+     * ActionListener für den Subscribe Broadcast Button. (MyMessages Fragment)
+     *
+     * @param v View des Buttons
+     */
+    public void onSubscribeClicked(View v) {
+        EditText etKeyString = (EditText) findViewById(R.id.etKeyString);
+        String key = etKeyString.getText().toString();
+        String title = "<New Topic>";
+        Topics newTopic = new Topics(key, title);
+        this.saveTopicsInFiles(newTopic, myMessagesPath);
+        selectItem(0);
     }
 
     /**
-     * ActionListener für den NewBroadcastButton.
+     * ActionListener für den NewBroadcast Button. (MyBroadcasts Fragment)
      *
      * @param v View des Buttons.
      */
     public void onNewBroadcastClicked(View v) {
         //Generate TopicKey
         String key = Long.toString(new Random().nextLong(), 32);
-        String title = "<Click to Edit>";
+        String title = "<New Broadcast>";
         Topics newBroadcast = new Topics(key, title);
-        this.saveTopicsInFiles(newBroadcast);
+        this.saveTopicsInFiles(newBroadcast, myBroadcastsPath);
         selectItem(1);
     }
 
@@ -258,17 +271,17 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param broadcast Topics-Objekt zum speichern.
      */
-    private void saveTopicsInFiles(Topics broadcast) {
+    private void saveTopicsInFiles(Topics broadcast, String path) {
         Gson gson = new Gson();
         String json = gson.toJson(broadcast);
 
         String text = json;
-        File file = new File(myBroadcastsPath);
+        File file = new File(path);
         if (!file.exists()) {
             file.mkdirs();
         }
 
-        String filename = broadcast.getIdentifier() + myBroadcastExtension;
+        String filename = broadcast.getIdentifier() + myFileExtensions;
         File outfile = new File(file, filename);
 
         FileWriter fileWriter;
