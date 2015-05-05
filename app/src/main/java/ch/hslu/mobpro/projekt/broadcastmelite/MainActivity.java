@@ -62,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
 
         initPreferences();
 
+        if (!initFileStrucutre()) {
+            Log.e("initFileStructure: ", "Could not create FileStructure");
+        }
 
         myBroadcastsPath = getFilesDir() + "/mybroadcasts/";
 
@@ -112,6 +115,24 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             selectItem(0);
         }
+    }
+
+    //Initialisiert die Filestruktur wenn nicht vorhanden.
+    private boolean initFileStrucutre() {
+        File myMessagesPath = new File(getFilesDir() + "/mymessages/");
+        File myBroadcastsPath = new File(getFilesDir() + "/mybroadcasts/");
+
+        boolean myMessagesPathAvailable = false;
+        boolean myBroadcastsPathAvailable = false;
+
+        if (!myMessagesPath.exists()) {
+            myMessagesPathAvailable = myMessagesPath.mkdirs();
+        }
+
+        if (!myBroadcastsPath.exists()) {
+            myBroadcastsPathAvailable = myBroadcastsPath.mkdirs();
+        }
+        return (myMessagesPathAvailable && myBroadcastsPathAvailable);
     }
 
 

@@ -149,9 +149,13 @@ public class MyMessagesFragment extends ListFragment {
     private void loadAllSubscribedTopics() {
 
         File files = new File(myMessagesPath);
-        for (File f : files.listFiles()) {
-            Topics topic = parseTopicFromFile(f);
-            subscribedTopics.add(topic);
+        if (files != null) {
+            for (File f : files.listFiles()) {
+                Topics topic = parseTopicFromFile(f);
+                subscribedTopics.add(topic);
+            }
+        } else {
+            Log.i("Load Subscribed Topics", "No Topics Subscriped");
         }
     }
 
