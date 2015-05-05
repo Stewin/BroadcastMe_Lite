@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.preference.ListPreference;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -18,13 +19,19 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Calendar;
 import java.util.Random;
 
@@ -206,7 +213,6 @@ public class MainActivity extends AppCompatActivity {
             drawerList.setItemChecked(position, true);
             setTitle(menuPoints[position]);
             drawerLayout.closeDrawer(drawerList);
-
         } else {
             // error in creating fragment
             Log.e("MainActivity", "Error in creating fragment");
@@ -253,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * ActionListener für den NewBroadcast Button. (MyBroadcasts Fragment)
+     * ActionListener für den NewBroadcastButton.
      *
      * @param v View des Buttons.
      */
