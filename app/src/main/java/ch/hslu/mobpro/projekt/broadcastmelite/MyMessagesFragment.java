@@ -145,7 +145,7 @@ public class MyMessagesFragment extends ListFragment {
             throw new JSONException("Could not Parse JSON");
         } catch (Exception ex) {
             performBackgroundTask.getStatus();
-            Log.e("Irgendöppis mitem executor", "komisch");
+            Log.e("Öppis mitm executor", "komisch");
             throw new Exception(performBackgroundTask.getStatus().toString());
         }
     }
