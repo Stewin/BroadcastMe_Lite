@@ -58,14 +58,15 @@ public class MyMessagesFragment extends ListFragment {
     @Override
     public void onResume() {
         super.onResume();
-        pullAllNewMessages();
         refreshListView();
+        pullAllNewMessages();
     }
 
     /**
      * Aktualisiert die Liste mit Broadcasts.
      */
     private void refreshListView() {
+        subscribedTopics.clear();
         this.loadAllSubscribedTopics();
 
         String[] values = new String[subscribedTopics.size()];
