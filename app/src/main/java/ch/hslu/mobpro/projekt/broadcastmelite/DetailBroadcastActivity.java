@@ -6,8 +6,8 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -27,7 +27,6 @@ public class DetailBroadcastActivity extends Activity {
     DownloadTask performBackgroundTask;
     private TextView tvTopic;
     private TextView tvInfos;
-    private Button btnSendMessage;
     private TextView tvMessage;
     private String topicTitle;
     private String key;
@@ -43,7 +42,6 @@ public class DetailBroadcastActivity extends Activity {
         tvTopic = (TextView) findViewById(R.id.tvBroadcastTitle);
         tvInfos = (TextView) findViewById(R.id.tvInfos);
         tvMessage = (TextView) findViewById(R.id.tvMessage);
-        btnSendMessage = (Button) findViewById(R.id.btnSendMessage);
 
         performBackgroundTask = new DownloadTask(this);
 
@@ -67,8 +65,8 @@ public class DetailBroadcastActivity extends Activity {
      * Speichert den Broadcast beim Schliessen der Activity.
      */
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
         persistCurrentBroadcast();
     }
 
@@ -129,12 +127,15 @@ public class DetailBroadcastActivity extends Activity {
 
         try {
             performBackgroundTask.execute("http://mikegernet.ch/mobpro/index.php?post=" + key + "&message=" + message).get();
+            messages.add(message);
+            tvMessage.setText("");
+            Toast.makeText(this, "Message sent", Toast.LENGTH_SHORT).show();
+            persistCurrentBroadcast();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             Log.e("Send Message: ", "Message konnte nicht an Server gesendet werden.");
         }
-        messages.add(message);
     }
 
 

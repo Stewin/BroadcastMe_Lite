@@ -17,18 +17,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.Calendar;
 import java.util.Random;
 
@@ -122,25 +117,28 @@ public class MainActivity extends AppCompatActivity {
         File myMessagesPath = new File(getFilesDir() + "/mymessages/");
         File myBroadcastsPath = new File(getFilesDir() + "/mybroadcasts/");
 
-        boolean myMessagesPathAvailable = false;
-        boolean myBroadcastsPathAvailable = false;
+        boolean myMessagesPathAvailable;
+        boolean myBroadcastsPathAvailable;
 
         if (!myMessagesPath.exists()) {
             myMessagesPathAvailable = myMessagesPath.mkdirs();
+        } else {
+            myMessagesPathAvailable = true;
         }
 
         if (!myBroadcastsPath.exists()) {
             myBroadcastsPathAvailable = myBroadcastsPath.mkdirs();
+        } else {
+            myBroadcastsPathAvailable = true;
         }
         return (myMessagesPathAvailable && myBroadcastsPathAvailable);
     }
 
 
+    //Initilisiert die Preferences.
     private void initPreferences() {
 
-
         preference = PreferenceManager.getDefaultSharedPreferences(this);
-//        preference = getSharedPreferences("settings",MODE_PRIVATE);
         editor = preference.edit();
 
         this.timeStamp = preference.getLong("TimeStamp", Calendar.getInstance().getTimeInMillis() / 1000L);
@@ -234,87 +232,11 @@ public class MainActivity extends AppCompatActivity {
         drawerToggle.onConfigurationChanged(newConfig);
     }
 
-    public void createTestData() throws IOException {
-        Topics topic = new Topics("hhgzu767", "PREN2");
-        topic.addMessage("Message 100");
-        topic.addMessage("Message 200");
-        topic.addMessage("Message 300");
-        topic.addMessage("Message 400");
 
-        saveText(topic);
 
-        Topics topic2 = loadText("hhgzu767");
-        Toast.makeText(this, topic2.getName(), Toast.LENGTH_LONG).show();
-
-        /*
-        DownloadTask performBackgroundTask = new DownloadTask(context);
-
-        GET
-        String result = performBackgroundTask.execute("http://mikegernet.ch/mobpro/index.php?get=1234&timestamp=1").get();
-
-        POST
-        performBackgroundTask.execute("http://mikegernet.ch/mobpro/index.php?post=<key>&message=<mtext>").get();
-        */
-    }
-
-    public void saveText(Topics data) throws IOException {
-        Gson gson = new Gson();
-        String json = gson.toJson(data);
-
-        String text = json;
-        File file = new File(getFilesDir() + "/mymessages/");
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-
-        String FILENAME = data.getIdentifier() + ".txt";
-        System.err.println(FILENAME);
-        File outfile = new File(file, FILENAME);
-        System.out.println(outfile.toString());
-        FileWriter fw;
-        BufferedWriter bw;
-        Writer writer = null;
-        try {
-            fw = new FileWriter(outfile);
-            bw = new BufferedWriter(fw);
-            bw.write(text);
-            bw.close();
-            fw.close();
-        } catch (IOException ex) {
-            Log.e("Persistenz", "Error beim schreiben");
-            System.out.println(ex.toString());
-        } finally {
-        }
-    }
-
-    public Topics loadText(String filename) {
-
-        File file = new File(getFilesDir() + "/mymessages/");
-        String FILENAME = filename + ".txt";
-        System.err.println(FILENAME);
-        File infile = new File(file, FILENAME);
-        FileReader fr;
-        BufferedReader br;
-        String text = "";
-        try {
-            fr = new FileReader(infile);
-            br = new BufferedReader(fr);
-            String tmp;
-            while ((tmp = br.readLine()) != null) text += tmp;
-            fr.close();
-            br.close();
-        } catch (FileNotFoundException fnfe) {
-            System.err.println("File not found");
-        } catch (IOException e) {
-            System.err.println("IO Exception");
-        } finally {
-        }
-        Gson gson = new Gson();
-        return gson.fromJson(text, Topics.class);
-    }
 
     public void onSubscribeClicked(View v) throws IOException {
-        createTestData();
+
     }
 
     /**
@@ -328,6 +250,7 @@ public class MainActivity extends AppCompatActivity {
         String title = "<Click to Edit>";
         Topics newBroadcast = new Topics(key, title);
         this.saveTopicsInFiles(newBroadcast);
+        selectItem(1);
     }
 
     /**

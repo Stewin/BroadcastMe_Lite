@@ -25,7 +25,6 @@ import java.util.ArrayList;
 public class MyBroadcastFragment extends ListFragment {
 
     private final String myBroadcastExtension = ".txt";
-    private ListView listView;
     private ArrayList<Topics> myOwnBroadcasts = new ArrayList<>();
     private String myBroadcastsPath;
 
@@ -35,7 +34,6 @@ public class MyBroadcastFragment extends ListFragment {
         super.onActivityCreated(savedInstanceState);
 
         View rootView = inflater.inflate(R.layout.fragment_mybroadcasts, container, false);
-        listView = (ListView) rootView.findViewById(R.id.list_item);
 
         myBroadcastsPath = getActivity().getFilesDir() + "/mybroadcasts/";
 
@@ -72,9 +70,11 @@ public class MyBroadcastFragment extends ListFragment {
     private void loadAllOwnBroadcasts() {
         myOwnBroadcasts.clear();
         File files = new File(myBroadcastsPath);
-        for (File f : files.listFiles()) {
-            Topics topic = parseTopicFromFile(f);
-            myOwnBroadcasts.add(topic);
+        if (files != null) {
+            for (File f : files.listFiles()) {
+                Topics topic = parseTopicFromFile(f);
+                myOwnBroadcasts.add(topic);
+            }
         }
     }
 
@@ -114,7 +114,6 @@ public class MyBroadcastFragment extends ListFragment {
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        //ToDo: Implement Logic for a Click on a BroadcastItem
         Intent intent = new Intent(getActivity(), DetailBroadcastActivity.class);
         Topics topic = myOwnBroadcasts.get(position);
         intent.putExtra("title", topic.getName());
