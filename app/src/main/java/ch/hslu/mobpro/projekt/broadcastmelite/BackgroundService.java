@@ -86,7 +86,7 @@ public class BackgroundService extends Service {
                             int newMessages = 0;
                             for(String tmp : ids){
                                 DownloadTask performBackgroundTask = new DownloadTask(context);
-                                String result = performBackgroundTask.execute("http://mikegernet.ch/mobpro/index.php?get="+tmp+"&timestamp="+1).get();
+                                String result = performBackgroundTask.execute("http://mikegernet.ch/mobpro/index.php?get="+tmp+"&timestamp="+timestamp).get();
                                 System.err.println("Result: " + result);
                                 newMessages+=parseJSON(result);
                             }
