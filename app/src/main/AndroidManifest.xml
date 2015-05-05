@@ -23,6 +23,7 @@
         </activity>
 
         <activity android:name=".DetailBroadcastActivity" />
+        <activity android:name=".MessageListActivity" />
 
         <receiver android:name=".BootCompletedIntentReceiver">
             <intent-filter>

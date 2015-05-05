@@ -1,5 +1,6 @@
 package ch.hslu.mobpro.projekt.broadcastmelite;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
@@ -41,7 +42,6 @@ public class MyMessagesFragment extends ListFragment {
         super.onActivityCreated(savedInstanceState);
 
         View rootView = inflater.inflate(R.layout.fragment_mymessages, container, false);
-        listView = (ListView) rootView.findViewById(R.id.list_item);
 
         performBackgroundTask = new DownloadTask(getActivity());
 
@@ -50,7 +50,7 @@ public class MyMessagesFragment extends ListFragment {
         myMessagesPath = getActivity().getFilesDir() + "/mymessages/";
         this.loadAllSubscribedTopics();
 
-        pullAllNewMessages();
+//        pullAllNewMessages();
 
         String[] values = new String[subscribedTopics.size()];
         for (int i = 0; i < values.length; i++) {
@@ -67,6 +67,13 @@ public class MyMessagesFragment extends ListFragment {
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
 
+        Topics topic = subscribedTopics.get(position);
+
+        Intent intent = new Intent(getActivity(), MessageListActivity.class);
+        intent.putExtra("title", topic.getName());
+        intent.putStringArrayListExtra("messages", topic.getMessages());
+
+        startActivity(intent);
     }
 
     /**

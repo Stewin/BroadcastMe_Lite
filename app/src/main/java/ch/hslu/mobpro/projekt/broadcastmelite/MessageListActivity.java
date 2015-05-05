@@ -1,17 +1,20 @@
 package ch.hslu.mobpro.projekt.broadcastmelite;
 
-import android.app.Activity;
+import android.app.ListActivity;
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import java.util.ArrayList;
 
 /**
  * Created by Stefan on 29.04.2015.
  */
-public class MessageListActivity extends Activity {
+public class MessageListActivity extends ListActivity {
 
-    private ListView messageList;
-    private TextView topicTitle;
+    private ListView lvMessageList;
+    private TextView tvTopicTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,8 +22,18 @@ public class MessageListActivity extends Activity {
 
         setContentView(R.layout.activity_messagelist);
 
-        topicTitle = (TextView) findViewById(R.id.tvTopic);
+        tvTopicTitle = (TextView) findViewById(R.id.tvTopic);
 
-        //ToDo: Fill Content of List with Messages from one Topic
+        tvTopicTitle.setText(getIntent().getStringExtra("title"));
+
+        ArrayList<String> messages = getIntent().getStringArrayListExtra("messages");
+
+        String[] values = new String[messages.size()];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = messages.get(i);
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, values);
+        setListAdapter(adapter);
     }
 }
