@@ -1,12 +1,9 @@
 package ch.hslu.mobpro.projekt.broadcastmelite;
 
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -14,16 +11,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 /**
  * Created by Stefan on 29.04.2015.
  */
 public class SettingsFragment extends Fragment {
 
+    private final String INTERVALL_PREFERENCE = "intervall";
     private SharedPreferences preference;
     private SharedPreferences.Editor editor;
-    private final String INTERVALL_PREFERENCE = "intervall";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -46,7 +42,6 @@ public class SettingsFragment extends Fragment {
                 //Restart Service
                 getActivity().stopService(new Intent(getActivity(), BackgroundService.class));
                 getActivity().startService(new Intent(getActivity(), BackgroundService.class));
-
             }
 
             @Override

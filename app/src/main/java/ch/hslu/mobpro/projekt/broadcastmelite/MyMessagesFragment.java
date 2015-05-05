@@ -1,8 +1,10 @@
 package ch.hslu.mobpro.projekt.broadcastmelite;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,6 +27,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.concurrent.ExecutionException;
 
 
@@ -50,15 +53,12 @@ public class MyMessagesFragment extends ListFragment {
         myMessagesPath = getActivity().getFilesDir() + "/mymessages/";
         this.loadAllSubscribedTopics();
 
-        refreshListView();
-
         return rootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        refreshListView();
         pullAllNewMessages();
     }
 
@@ -98,7 +98,6 @@ public class MyMessagesFragment extends ListFragment {
     private void pullAllNewMessages() {
         for (int i = 0; i < subscribedTopics.size(); i++) {
             Topics topic = subscribedTopics.get(i);
-            topic.getMessages().clear();
             try {
                 String[] newMessages = pullNewMessagesByKey(topic.getIdentifier());
 
@@ -112,32 +111,45 @@ public class MyMessagesFragment extends ListFragment {
             } catch (Exception ex) {
                 Log.e("Sömthing went wröng", ex.getMessage());
             }
+
+            //Speichere Topic mit neuen Nacrichten.
             persistTopics(topic);
+            refreshListView();
         }
+        //Setze neuen Timestamp (zuletzt Aktualisiert)
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
+        editor.putLong("timestamp", Calendar.getInstance().getTimeInMillis() / 1000);
+        Log.i("Timestamp SET", Calendar.getInstance().getTimeInMillis() / 1000 + "");
+        editor.apply();
     }
 
     /**
      * Holt alle Messages zu einem topic(Identifier), die neuer sind als der Timestamp.
      *
      * @param identifier Identifier des Topics.
-     * @return Meesages zum Identifier die neuer sind als der Topic.
+     * @return Meesages zum Identifier die neuer sind als der Timestamp.
      * @throws JSONException Falls die Messages nicht geparst werden können.
      */
     private String[] pullNewMessagesByKey(String identifier) throws Exception {
+
+        //Hole Timestamp (zuletzt aktualisiert)
+        long timestamp = PreferenceManager.getDefaultSharedPreferences(getActivity()).getLong("timestamp", 1);
+        Log.i("Timestamp GET", timestamp + "");
+
         try {
-            long timestamp = 1;
-            //ToDo: Add Timestamp from preferences to the Request instead of 1.
-
+            //Pulle nachrichten vom Server mit Identifier und Timestamp
             String result = null;
-
             performBackgroundTask = new DownloadTask(getActivity());
             result = performBackgroundTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "http://mikegernet.ch/mobpro/index.php?get=" + identifier + "&timestamp=" + timestamp).get();
 
-
+            //Wenn keine neuen Nachrichten liefer new String[0] zurück.
             if (result == null) {
                 return new String[0];
             }
+
+            //Parse den String nach JSON Objekten und extrahiere Nachrichten
             return parseJSONforMessages(result);
+
         } catch (InterruptedException e) {
             Log.e("Pull Messages", "pull failed.");
             throw new JSONException("Could not Parse JSON");
@@ -162,8 +174,7 @@ public class MyMessagesFragment extends ListFragment {
     public String[] parseJSONforMessages(String json) throws JSONException {
         try {
             JSONArray jsonArray = new JSONArray(json);
-            int numberOfMessages = jsonArray.length();
-            String[] messages = new String[numberOfMessages];
+            String[] messages = new String[jsonArray.length()];
             if (messages == null) {
                 return new String[0];
             }
@@ -233,7 +244,6 @@ public class MyMessagesFragment extends ListFragment {
     //Speichert den Broadcast der aktuell auf der Activity angezeigt wird.
     private void persistTopics(Topics topic) {
         Gson gson = new Gson();
-
 
         String json = gson.toJson(topic);
 
