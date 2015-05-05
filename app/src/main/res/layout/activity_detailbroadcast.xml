@@ -5,12 +5,14 @@
     android:orientation="vertical"
     android:weightSum="1">
 
-    <TextView
+    <EditText
         android:id="@+id/tvBroadcastTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="&lt;Broadcast Title>"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:editable="true"
+        android:enabled="true"
+        android:singleLine="true"
+        android:text="&lt;Broadcast Title>" />
 
     <TextView
         android:id="@+id/tvInfos"
@@ -26,12 +28,14 @@
         android:layout_marginTop="5dp"
         android:background="@android:color/darker_gray" />
 
-    <TextView
+    <EditText
         android:id="@+id/tvMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.51"
         android:editable="true"
+        android:enabled="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:text="&lt;New Message>" />
 
     <Button

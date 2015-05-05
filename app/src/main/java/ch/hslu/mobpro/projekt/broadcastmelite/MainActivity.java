@@ -39,6 +39,7 @@ import java.util.Random;
 public class MainActivity extends AppCompatActivity {
 
     private final String myBroadcastExtension = ".txt";
+    DownloadTask performBackgroundTask;
     private DrawerLayout drawerLayout;
     private ListView drawerList;
     private ActionBarDrawerToggle drawerToggle;
@@ -61,7 +62,10 @@ public class MainActivity extends AppCompatActivity {
 
         initPreferences();
 
+
         myBroadcastsPath = getFilesDir() + "/mybroadcasts/";
+
+        performBackgroundTask = new DownloadTask(this);
 
         title = drawerTitle = getTitle();
         menuPoints = getResources().getStringArray(R.array.menuPoints_array);
@@ -109,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
             selectItem(0);
         }
     }
+
 
     private void initPreferences() {
 
@@ -222,7 +227,12 @@ public class MainActivity extends AppCompatActivity {
 
         /*
         DownloadTask performBackgroundTask = new DownloadTask(context);
+
+        GET
         String result = performBackgroundTask.execute("http://mikegernet.ch/mobpro/index.php?get=1234&timestamp=1").get();
+
+        POST
+        performBackgroundTask.execute("http://mikegernet.ch/mobpro/index.php?post=<key>&message=<mtext>").get();
         */
     }
 
@@ -292,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
      * @param v View des Buttons.
      */
     public void onNewBroadcastClicked(View v) {
-//Generate TopicKey
+        //Generate TopicKey
         String key = Long.toString(new Random().nextLong(), 32);
         String title = "<Click to Edit>";
         Topics newBroadcast = new Topics(key, title);

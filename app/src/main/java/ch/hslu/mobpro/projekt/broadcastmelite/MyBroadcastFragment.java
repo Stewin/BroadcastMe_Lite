@@ -1,5 +1,6 @@
 package ch.hslu.mobpro.projekt.broadcastmelite;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
@@ -37,6 +38,21 @@ public class MyBroadcastFragment extends ListFragment {
         listView = (ListView) rootView.findViewById(R.id.list_item);
 
         myBroadcastsPath = getActivity().getFilesDir() + "/mybroadcasts/";
+
+
+        return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshListView();
+    }
+
+    /**
+     * Aktualisiert die Liste mit Broadcasts.
+     */
+    private void refreshListView() {
         this.loadAllOwnBroadcasts();
 
         String[] values = new String[myOwnBroadcasts.size()];
@@ -47,14 +63,14 @@ public class MyBroadcastFragment extends ListFragment {
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
                 android.R.layout.simple_list_item_1, values);
         setListAdapter(adapter);
-
-        return rootView;
     }
+
 
     /**
      * Lädt alle Dateien im Filepfad für "mybroadcasts" in die Memebervariable myOwnBroadcasts.
      */
     private void loadAllOwnBroadcasts() {
+        myOwnBroadcasts.clear();
         File files = new File(myBroadcastsPath);
         for (File f : files.listFiles()) {
             Topics topic = parseTopicFromFile(f);
@@ -99,5 +115,14 @@ public class MyBroadcastFragment extends ListFragment {
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         //ToDo: Implement Logic for a Click on a BroadcastItem
+        Intent intent = new Intent(getActivity(), DetailBroadcastActivity.class);
+        Topics topic = myOwnBroadcasts.get(position);
+        intent.putExtra("title", topic.getName());
+        intent.putExtra("key", topic.getIdentifier());
+
+        String[] messageArray = new String[topic.getMessages().size()];
+        intent.putExtra("messages", topic.getMessages().toArray(messageArray));
+
+        startActivity(intent);
     }
 }
