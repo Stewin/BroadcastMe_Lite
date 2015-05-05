@@ -2,26 +2,16 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
-        android:title="Settings">
+        android:title="Settings"
+        android:key="settings">
 
-        <CheckBoxPreference
-            android:key="example_key"
-            android:title="example String"
-            android:defaultValue="true"/>
-
-        <CheckBoxPreference
-            android:key="transparent_nav"
-            android:title="title"
-            android:defaultValue="false"/>
-
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        android:title="category">
-
-        <Preference
-            android:key="call_method"
-            android:title="preference"/>
+        <ListPreference android:title="Intervall"
+            android:summary="Intervall to Pull new Messages"
+            android:key="invervallKey"
+            android:defaultValue="0"
+            android:persistent="true"
+            android:entries="@array/intervall"
+            android:entryValues="@array/intervallValues" />
 
     </PreferenceCategory>
 
