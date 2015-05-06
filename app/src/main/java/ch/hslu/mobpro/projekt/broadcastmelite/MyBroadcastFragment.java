@@ -4,9 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -39,6 +43,13 @@ public class MyBroadcastFragment extends ListFragment {
         super.onResume();
         loadAllOwnBroadcasts();
         refreshListView();
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        registerForContextMenu(this.getListView());
     }
 
     /**
@@ -85,5 +96,31 @@ public class MyBroadcastFragment extends ListFragment {
         intent.putExtra("messages", topic.getMessages().toArray(messageArray));
 
         startActivity(intent);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+
+        MenuInflater inflater = this.getActivity().getMenuInflater();
+        inflater.inflate(R.menu.contextmenu_broadcastme, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        switch (item.getItemId()) {
+
+            case R.id.action_delete:
+                Topics broadcastToDelete = myOwnBroadcasts.get((int) info.id);
+                TopicPersistor.deleteTopic(broadcastToDelete, myBroadcastsPath);
+                myOwnBroadcasts.remove(broadcastToDelete);
+                refreshListView();
+                return true;
+
+            default:
+                return super.onContextItemSelected(item);
+        }
     }
 }

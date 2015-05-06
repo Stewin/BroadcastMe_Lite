@@ -96,4 +96,9 @@ public class TopicPersistor {
         Gson gson = new Gson();
         return gson.fromJson(text, Topics.class);
     }
+
+    public static final void deleteTopic(Topics topics, String fullPath) {
+        File fileToDelete = new File(fullPath, topics.getIdentifier() + FILE_EXTENSION);
+        fileToDelete.delete();
+    }
 }

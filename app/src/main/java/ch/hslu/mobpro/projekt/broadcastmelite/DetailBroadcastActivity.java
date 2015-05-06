@@ -1,6 +1,7 @@
 package ch.hslu.mobpro.projekt.broadcastmelite;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -77,7 +78,7 @@ public class DetailBroadcastActivity extends Activity {
     }
 
     /**
-     * OnClickListener dür den Send Message Button.
+     * OnClickListener für den Send Message Button.
      *
      * @param v View des Buttons.
      */
@@ -93,7 +94,7 @@ public class DetailBroadcastActivity extends Activity {
 
         try {
             performBackgroundTask = new DownloadTask(this);
-            performBackgroundTask.execute("http://mikegernet.ch/mobpro/index.php?post=" + key + "&message=" + message).get();
+            performBackgroundTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "http://mikegernet.ch/mobpro/index.php?post=" + key + "&message=" + message).get();
             messages.add(message);
             tvMessage.setText("");
             Toast.makeText(this, "Message sent", Toast.LENGTH_SHORT).show();

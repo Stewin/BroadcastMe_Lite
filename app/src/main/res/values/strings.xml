@@ -4,6 +4,7 @@
     <string name="drawer_open">drawer open</string>
     <string name="drawer_close">drawer close</string>
     <string name="app_not_available">app not available</string>
+    <string name="action_delete">Delete</string>
     <string-array name="menuPoints_array">
         <item>MyMessages</item>
         <item>MyBroadcasts</item>
