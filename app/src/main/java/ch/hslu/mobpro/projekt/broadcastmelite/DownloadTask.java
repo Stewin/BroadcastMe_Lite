@@ -1,33 +1,25 @@
 package ch.hslu.mobpro.projekt.broadcastmelite;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
-import android.content.Context;
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.support.v4.app.NotificationCompat;
-import android.widget.Toast;
 
-import java.io.BufferedInputStream;
+import android.content.Context;
+import android.os.AsyncTask;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ResponseCache;
 import java.net.URL;
 
 
 /**
  * Created by mike on 28/04/2015.
  */
-public class DownloadTask  extends AsyncTask<String, Void, String> {
+public class DownloadTask extends AsyncTask<String, Void, String> {
 
     private Context context;
 
-    public DownloadTask(Context context){
-        this.context=context;
+    public DownloadTask(Context context) {
+        this.context = context;
     }
 
 
@@ -47,7 +39,7 @@ public class DownloadTask  extends AsyncTask<String, Void, String> {
 
             conn.connect();
 
-            if(conn.getResponseCode()== HttpURLConnection.HTTP_OK) {
+            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 InputStream is = conn.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
                 String data = "";
@@ -60,7 +52,6 @@ public class DownloadTask  extends AsyncTask<String, Void, String> {
         }
         return webPage;
     }
-
 
 
     @Override

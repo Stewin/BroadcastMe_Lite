@@ -1,10 +1,8 @@
 package ch.hslu.mobpro.projekt.broadcastmelite;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
@@ -25,7 +23,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.Random;
 
 
@@ -42,33 +39,33 @@ public class MainActivity extends AppCompatActivity {
     private CharSequence drawerTitle;
     private CharSequence title;
     private String[] menuPoints;
-    private SharedPreferences preference;
-    private SharedPreferences.Editor editor;
-    private long timeStamp;
-    private int requestIntervall;
     private String myMessagesPath;
     private String myBroadcastsPath;
-    private EditText etKeyString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         Intent intent = new Intent(this, BackgroundService.class);
         startService(intent);
 
-        initPreferences();
-
         if (!initFileStrucutre()) {
             Log.e("initFileStructure: ", "Could not create FileStructure");
         }
 
-        myBroadcastsPath = getFilesDir() + "/mybroadcasts/";
-        myMessagesPath = getFilesDir() + "/mymessages/";
+        initDrawerMenu();
 
         performBackgroundTask = new DownloadTask(this);
 
+        if (savedInstanceState == null) {
+            selectItem(0);
+        }
+    }
+
+
+    private void initDrawerMenu() {
         title = drawerTitle = getTitle();
         menuPoints = getResources().getStringArray(R.array.menuPoints_array);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -110,16 +107,15 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         drawerLayout.setDrawerListener(drawerToggle);
-
-        if (savedInstanceState == null) {
-            selectItem(0);
-        }
     }
 
-    //Initialisiert die Filestruktur wenn nicht vorhanden.
     private boolean initFileStrucutre() {
-        File myMessagesPath = new File(getFilesDir() + "/mymessages/");
-        File myBroadcastsPath = new File(getFilesDir() + "/mybroadcasts/");
+
+        this.myBroadcastsPath = getFilesDir() + "/mybroadcasts/";
+        this.myMessagesPath = getFilesDir() + "/mymessages/";
+
+        File myMessagesPath = new File(this.myMessagesPath);
+        File myBroadcastsPath = new File(this.myBroadcastsPath);
 
         boolean myMessagesPathAvailable;
         boolean myBroadcastsPathAvailable;
@@ -136,19 +132,6 @@ public class MainActivity extends AppCompatActivity {
             myBroadcastsPathAvailable = true;
         }
         return (myMessagesPathAvailable && myBroadcastsPathAvailable);
-    }
-
-
-    //Initilisiert die Preferences.
-    private void initPreferences() {
-
-        preference = PreferenceManager.getDefaultSharedPreferences(this);
-        editor = preference.edit();
-
-        this.timeStamp = preference.getLong("TimeStamp", Calendar.getInstance().getTimeInMillis() / 1000L);
-        this.requestIntervall = preference.getInt("RequestIntervall", 0);
-
-        editor.putLong("TimeStamp", Calendar.getInstance().getTimeInMillis());
     }
 
     @Override
@@ -178,7 +161,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void selectItem(int position) {
-
         // update the main content by replacing fragments
         Fragment fragment = null;
         switch (position) {

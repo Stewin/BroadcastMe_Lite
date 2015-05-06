@@ -9,12 +9,8 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
@@ -72,47 +68,12 @@ public class DetailBroadcastActivity extends Activity {
 
     //Speichert den Broadcast der aktuell auf der Activity angezeigt wird.
     private void persistCurrentBroadcast() {
-        Gson gson = new Gson();
         Topics currentBroadcast = new Topics(key, topicTitle);
         for (String s : messages) {
             currentBroadcast.addMessage(s);
         }
 
-        String json = gson.toJson(currentBroadcast);
-
-        String text = json;
-        File directoryPath = new File(myBroadcastsPath);
-        if (!directoryPath.exists()) {
-            directoryPath.mkdirs();
-        }
-
-        String filename = key + myBroadcastExtension;
-        File outfile = new File(directoryPath, filename);
-
-        if (outfile.exists()) {
-            outfile.delete();
-        }
-
-        FileWriter fileWriter;
-        BufferedWriter bufferedWriter = null;
-        try {
-            fileWriter = new FileWriter(outfile);
-            bufferedWriter = new BufferedWriter(fileWriter);
-
-            bufferedWriter.write(text);
-            bufferedWriter.flush();
-        } catch (IOException ex) {
-            Log.e("Persistenz", "Error beim schreiben");
-            System.out.println(ex.toString());
-        } finally {
-            try {
-                if (bufferedWriter != null) {
-                    bufferedWriter.close();
-                }
-            } catch (IOException ioex) {
-                Log.e("saveTopicsInFiles", "Could not close BufferedWriter");
-            }
-        }
+        TopicPersistor.persistTopic(currentBroadcast, myBroadcastsPath);
     }
 
     /**
@@ -123,14 +84,19 @@ public class DetailBroadcastActivity extends Activity {
     public void OnSendMessageClicked(View v) {
         Log.i("Detail BC Activity: ", "Send Message click");
 
-        String message = tvMessage.getText().toString();
+        String message = null;
+        try {
+            message = URLEncoder.encode(tvMessage.getText().toString(), "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            Log.e("URLEncoder: ", "Could not encode message.");
+        }
 
         try {
+            performBackgroundTask = new DownloadTask(this);
             performBackgroundTask.execute("http://mikegernet.ch/mobpro/index.php?post=" + key + "&message=" + message).get();
             messages.add(message);
             tvMessage.setText("");
             Toast.makeText(this, "Message sent", Toast.LENGTH_SHORT).show();
-            persistCurrentBroadcast();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -146,11 +112,11 @@ public class DetailBroadcastActivity extends Activity {
 
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
         }
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            Log.i("onTextChanged", "on Title changed");
             topicTitle = tvTopic.getText().toString();
         }
 

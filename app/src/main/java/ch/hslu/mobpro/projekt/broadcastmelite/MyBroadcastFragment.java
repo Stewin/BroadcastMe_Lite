@@ -10,13 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.google.gson.Gson;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -37,21 +31,20 @@ public class MyBroadcastFragment extends ListFragment {
 
         myBroadcastsPath = getActivity().getFilesDir() + "/mybroadcasts/";
 
-
         return rootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        loadAllOwnBroadcasts();
         refreshListView();
     }
 
     /**
-     * Aktualisiert die Liste mit Broadcasts.
+     * Aktualisiert die Liste (View) mit den zurzeit geladenen Broadcasts.
      */
     private void refreshListView() {
-        this.loadAllOwnBroadcasts();
 
         String[] values = new String[myOwnBroadcasts.size()];
         for (int i = 0; i < values.length; i++) {
@@ -68,50 +61,17 @@ public class MyBroadcastFragment extends ListFragment {
      * Lädt alle Dateien im Filepfad für "mybroadcasts" in die Memebervariable myOwnBroadcasts.
      */
     private void loadAllOwnBroadcasts() {
-        myOwnBroadcasts.clear();
+        myOwnBroadcasts = new ArrayList<>();
+
         File files = new File(myBroadcastsPath);
         if (files != null) {
             for (File f : files.listFiles()) {
-                Topics topic = parseTopicFromFile(f);
+                Topics topic = TopicPersistor.loadTopicFromFile(f);
                 myOwnBroadcasts.add(topic);
             }
         } else {
             Log.i("Load Own Broadcasts", "No Broadcasts available");
         }
-    }
-
-    /**
-     * Parst ein Topics-Objekt aus dem File.
-     *
-     * @param file File zum parsen.
-     * @return Topics-Objekt.
-     */
-    private Topics parseTopicFromFile(File file) {
-        FileReader fileReader = null;
-        BufferedReader bufferedReader = null;
-        String text = "";
-        try {
-            fileReader = new FileReader(file);
-            bufferedReader = new BufferedReader(fileReader);
-            String tmp;
-            while ((tmp = bufferedReader.readLine()) != null) text += tmp;
-            fileReader.close();
-            bufferedReader.close();
-        } catch (FileNotFoundException fnfe) {
-            System.err.println("File not found");
-        } catch (IOException e) {
-            System.err.println("IO Exception");
-        } finally {
-            try {
-                if (bufferedReader != null) {
-                    bufferedReader.close();
-                }
-            } catch (IOException ex) {
-                Log.e("parseTopicFromLine", "Could not close BufferedReader!");
-            }
-        }
-        Gson gson = new Gson();
-        return gson.fromJson(text, Topics.class);
     }
 
     @Override

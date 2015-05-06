@@ -11,25 +11,25 @@ public class Topics {
     private String name;
     private ArrayList<String> messages;
 
-    public Topics(String identifier, String name){
+    public Topics(String identifier, String name) {
         this.identifier = identifier;
         this.name = name;
         messages = new ArrayList<>();
     }
 
-    public String getIdentifier(){
+    public String getIdentifier() {
         return identifier;
     }
 
-    public String getName(){
+    public String getName() {
         return name;
     }
 
-    public void addMessage(String message){
+    public void addMessage(String message) {
         messages.add(message);
     }
 
-    public ArrayList<String> getMessages(){
+    public ArrayList<String> getMessages() {
         return messages;
     }
 

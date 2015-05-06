@@ -13,19 +13,11 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.google.gson.Gson;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.concurrent.ExecutionException;
@@ -51,7 +43,6 @@ public class MyMessagesFragment extends ListFragment {
         performBackgroundTask = new DownloadTask(getActivity());
 
         myMessagesPath = getActivity().getFilesDir() + "/mymessages/";
-        this.loadAllSubscribedTopics();
 
         return rootView;
     }
@@ -59,15 +50,15 @@ public class MyMessagesFragment extends ListFragment {
     @Override
     public void onResume() {
         super.onResume();
-        pullAllNewMessages();
+        loadAllSubscribedTopics();
+        pullAllNewMessages(); //Ladet alle neuen Messages der Registrierten Topics vom Server und speichert diese in die Datei.
+        refreshListView();
     }
 
     /**
-     * Aktualisiert die Liste mit Broadcasts.
+     * Aktualisiert die Liste mit Broadcasts die aktuell geladen sind.
      */
     private void refreshListView() {
-        subscribedTopics.clear();
-        this.loadAllSubscribedTopics();
 
         String[] values = new String[subscribedTopics.size()];
         for (int i = 0; i < values.length; i++) {
@@ -96,10 +87,14 @@ public class MyMessagesFragment extends ListFragment {
      * Holt alle Messages vom Server die aboniert und neuer als der letzte Timestamp sind.
      */
     private void pullAllNewMessages() {
+
         for (int i = 0; i < subscribedTopics.size(); i++) {
-            Topics topic = subscribedTopics.get(i);
+
+            Topics topic = subscribedTopics.get(i); //Topic zum prüfen.
+            long timestamp = PreferenceManager.getDefaultSharedPreferences(getActivity()).getLong("timestamp", 1);
+
             try {
-                String[] newMessages = pullNewMessagesByKey(topic.getIdentifier());
+                String[] newMessages = pullNewMessagesByKey(topic.getIdentifier(), timestamp);
 
                 if (newMessages.length > 0) {
                     for (String message : newMessages) {
@@ -113,13 +108,11 @@ public class MyMessagesFragment extends ListFragment {
             }
 
             //Speichere Topic mit neuen Nacrichten.
-            persistTopics(topic);
-            refreshListView();
+            TopicPersistor.persistTopic(topic, myMessagesPath);
         }
         //Setze neuen Timestamp (zuletzt Aktualisiert)
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
         editor.putLong("timestamp", Calendar.getInstance().getTimeInMillis() / 1000);
-        Log.i("Timestamp SET", Calendar.getInstance().getTimeInMillis() / 1000 + "");
         editor.apply();
     }
 
@@ -127,14 +120,11 @@ public class MyMessagesFragment extends ListFragment {
      * Holt alle Messages zu einem topic(Identifier), die neuer sind als der Timestamp.
      *
      * @param identifier Identifier des Topics.
+     * @param timestamp  Nachrichten die neuer sind als diese werden geladen.
      * @return Meesages zum Identifier die neuer sind als der Timestamp.
-     * @throws JSONException Falls die Messages nicht geparst werden können.
+     * @throws Exception JSONException Falls die Messages nicht geparst werden können.
      */
-    private String[] pullNewMessagesByKey(String identifier) throws Exception {
-
-        //Hole Timestamp (zuletzt aktualisiert)
-        long timestamp = PreferenceManager.getDefaultSharedPreferences(getActivity()).getLong("timestamp", 1);
-        Log.i("Timestamp GET", timestamp + "");
+    private String[] pullNewMessagesByKey(String identifier, long timestamp) throws Exception {
 
         try {
             //Pulle nachrichten vom Server mit Identifier und Timestamp
@@ -142,13 +132,14 @@ public class MyMessagesFragment extends ListFragment {
             performBackgroundTask = new DownloadTask(getActivity());
             result = performBackgroundTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "http://mikegernet.ch/mobpro/index.php?get=" + identifier + "&timestamp=" + timestamp).get();
 
-            //Wenn keine neuen Nachrichten liefer new String[0] zurück.
+            //Wenn keine neuen Nachrichten liefere new String[0] zurück.
             if (result == null) {
                 return new String[0];
             }
 
             //Parse den String nach JSON Objekten und extrahiere Nachrichten
-            return parseJSONforMessages(result);
+            String[] messages = parseJSONforMessages(result);
+            return messages;
 
         } catch (InterruptedException e) {
             Log.e("Pull Messages", "pull failed.");
@@ -195,90 +186,16 @@ public class MyMessagesFragment extends ListFragment {
      * Lädt alle Dateien im Filepfad für "mymessages" in die Memebervariable subscribedTopics.
      */
     private void loadAllSubscribedTopics() {
-        subscribedTopics.clear();
+        subscribedTopics = new ArrayList<>();
+
         File files = new File(myMessagesPath);
         if (files != null) {
             for (File f : files.listFiles()) {
-                Topics topic = parseTopicFromFile(f);
+                Topics topic = TopicPersistor.loadTopicFromFile(f);
                 subscribedTopics.add(topic);
             }
         } else {
-            Log.i("Load Subscribed Topics", "No Topics Subscriped");
-        }
-    }
-
-    /**
-     * Parst ein Topics-Objekt aus dem File.
-     *
-     * @param file File zum parsen.
-     * @return Topics-Objekt.
-     */
-    private Topics parseTopicFromFile(File file) {
-        FileReader fileReader = null;
-        BufferedReader bufferedReader = null;
-        String text = "";
-        try {
-            fileReader = new FileReader(file);
-            bufferedReader = new BufferedReader(fileReader);
-            String tmp;
-            while ((tmp = bufferedReader.readLine()) != null) text += tmp;
-            fileReader.close();
-            bufferedReader.close();
-        } catch (FileNotFoundException fnfe) {
-            System.err.println("File not found");
-        } catch (IOException e) {
-            System.err.println("IO Exception");
-        } finally {
-            try {
-                if (bufferedReader != null) {
-                    bufferedReader.close();
-                }
-            } catch (IOException ex) {
-                Log.e("parseTopicFromLine", "Could not close BufferedReader!");
-            }
-        }
-        Gson gson = new Gson();
-        return gson.fromJson(text, Topics.class);
-    }
-
-    //Speichert den Broadcast der aktuell auf der Activity angezeigt wird.
-    private void persistTopics(Topics topic) {
-        Gson gson = new Gson();
-
-        String json = gson.toJson(topic);
-
-        String text = json;
-        File directoryPath = new File(myMessagesPath);
-        if (!directoryPath.exists()) {
-            directoryPath.mkdirs();
-        }
-
-        String filename = topic.getIdentifier() + myMessagesExtension;
-        File outfile = new File(directoryPath, filename);
-
-        if (outfile.exists()) {
-            outfile.delete();
-        }
-
-        FileWriter fileWriter;
-        BufferedWriter bufferedWriter = null;
-        try {
-            fileWriter = new FileWriter(outfile);
-            bufferedWriter = new BufferedWriter(fileWriter);
-
-            bufferedWriter.write(text);
-            bufferedWriter.flush();
-        } catch (IOException ex) {
-            Log.e("Persistenz", "Error beim schreiben");
-            System.out.println(ex.toString());
-        } finally {
-            try {
-                if (bufferedWriter != null) {
-                    bufferedWriter.close();
-                }
-            } catch (IOException ioex) {
-                Log.e("saveTopicsInFiles", "Could not close BufferedWriter");
-            }
+            Log.i("Load Subscribed Topics", "No Topics Subscribed");
         }
     }
 }
