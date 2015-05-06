@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -66,12 +67,12 @@ public class BackgroundService extends Service {
                         try {
                             ArrayList<String> ids = getIdsFromMyMessages();
                             preference = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                            long timestamp = preference.getLong("TimeStamp", Calendar.getInstance().getTimeInMillis() / 1000L);
+                            long timestamp = preference.getLong("timestamp", Calendar.getInstance().getTimeInMillis() / 1000L);
                             int newMessages = 0;
                             for (String tmp : ids) {
                                 DownloadTask performBackgroundTask = new DownloadTask(context);
                                 String result = performBackgroundTask.execute("http://mikegernet.ch/mobpro/index.php?get=" + tmp + "&timestamp=" + timestamp).get();
-                                System.err.println("Result: " + result);
+                                Log.i("BroadcastMe", "String " + tmp + " wurde gelesen. Timestamp: " + timestamp + " Result: " + result);
                                 newMessages += parseJSON(result);
                             }
                             if (newMessages > countNewMessages) {
@@ -139,11 +140,9 @@ public class BackgroundService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         //return super.onStartCommand(intent, flags, startId);
-        System.err.println("Service gestartet");
+        Log.i("BroadcastMe", "Service gestartet");
         this.context = this;
         callAsynchronousTask();
-
-        //Toast.makeText(this, "Service gestartet", Toast.LENGTH_LONG).show();
         return START_STICKY;
     }
 
@@ -162,15 +161,6 @@ public class BackgroundService extends Service {
             e.printStackTrace();
         }
         return result;
-
-        /*
-        //Funktioniert falls Daten extrahiert werden müssen
-        for(int i = 0; i < jsonArray.length(); i++){
-            JSONObject jsonObject = jsonArray.getJSONObject(i);
-            String timestamp = jsonObject.getString("timestamp");
-            String message = jsonObject.getString("message");
-            System.err.println(timestamp +": " + message);
-        }*/
     }
 
 
