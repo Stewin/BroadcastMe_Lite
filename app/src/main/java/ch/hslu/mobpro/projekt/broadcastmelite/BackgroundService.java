@@ -93,7 +93,7 @@ public class BackgroundService extends Service {
         int intervallValue = 10000;
         switch (intervall) {
             case 1:
-                intervallValue = 60;
+                intervallValue = 10;
                 break;
             case 2:
                 intervallValue = 60 * 5;

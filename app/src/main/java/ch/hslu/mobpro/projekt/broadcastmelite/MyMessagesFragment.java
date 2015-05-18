@@ -22,6 +22,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.concurrent.ExecutionException;
@@ -174,7 +176,7 @@ public class MyMessagesFragment extends ListFragment {
      * @return Geparste Messages. leeres Array falls keine neuen Messages.
      * @throws JSONException Parser error.
      */
-    public String[] parseJSONforMessages(String json) throws JSONException {
+    public String[] parseJSONforMessages(String json) throws JSONException, UnsupportedEncodingException {
         try {
             JSONArray jsonArray = new JSONArray(json);
             String[] messages = new String[jsonArray.length()];
@@ -184,13 +186,16 @@ public class MyMessagesFragment extends ListFragment {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 String timestamp = jsonObject.getString("timestamp");
-                String message = jsonObject.getString("message");
+                String message =  URLDecoder.decode(jsonObject.getString("message"), "utf-8");
                 messages[i] = message;
             }
             return messages;
         } catch (JSONException e) {
             Log.e("JSON-Parser", "Could not parse JSON");
             throw new JSONException(e.getMessage());
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            throw new UnsupportedEncodingException(e.getMessage());
         }
     }
 
